@@ -1,0 +1,23 @@
+name:                integer-bench
+version:             0.1
+github:              "hsyl20/integer-bench"
+license:             BSD3
+author:              "Sylvain HENRY"
+maintainer:          "sylvain@haskus.fr"
+copyright:           "Sylvain HENRY 2019"
+
+description:         Comparing Integer and Natural implementations
+
+dependencies:
+- base >= 4.8 && < 5
+- criterion
+
+ghc-options: -Wall -O2 -fobject-code
+
+executables:
+   integer-bench:
+      source-dirs: src
+      main: Bench.hs
+      dependencies:
+         - haskus-integer
+         - integer-simple

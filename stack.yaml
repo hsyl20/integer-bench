@@ -1,0 +1,11 @@
+resolver: lts-13.19
+
+packages:
+- ./
+- integer-simple/
+
+extra-deps:
+- git: https://github.com/haskus/packages.git
+  commit: 836a60a7aaf807f057555ae399998ade99d41fee
+  subdirs:
+     - haskus-integer
