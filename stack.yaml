@@ -6,6 +6,6 @@ packages:
 
 extra-deps:
 - git: https://github.com/haskus/packages.git
-  commit: 836a60a7aaf807f057555ae399998ade99d41fee
+  commit: 792e8d1ae7a6b07b060e9614c756c971e54cc61f
   subdirs:
      - haskus-integer
