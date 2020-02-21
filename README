@@ -1,0 +1,4 @@
+How to execute
+==============
+
+cabal new-run integer-bench [-w ~/path/to/_build/stage1/bin/ghc]

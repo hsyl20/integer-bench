@@ -1,108 +1,93 @@
--- {-# OPTIONS_GHC -ddump-simpl #-}
-{-# LANGUAGE MagicHash #-}
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE FlexibleInstances #-}
 
-import Criterion.Main
+import Criterion.Measurement
+import Criterion.Measurement.Types
 
-import qualified Haskus.Number.BigNat as H
-import qualified Haskus.Number.Natural as H
-import qualified GHC.Integer.Simple as S
-import qualified GHC.Integer.Simple.Type as S
-import GHC.Natural
-import GHC.Exts
-import Data.Bits
-import Data.Maybe
+import BenchValues
+import Control.Monad
 
 main :: IO ()
-main = defaultMain benchmarks
+main = runBench 0 benchmarks
+   
+class RunBench a where
+   runBench :: Int -> a -> IO ()
+
+instance RunBench [Benchmark] where
+   runBench off benchs = forM_ benchs (runBench off)
+
+instance RunBench Benchmark where
+   runBench off (Environment setEnv unsetEnv b) = do
+      e <- setEnv
+      r <- runBench off (b e)
+      _ <- unsetEnv e
+      return r
+   runBench off (Benchmark name b) = do
+      indentName off name
+      let lowerBound = 2
+      (measures,_totalTime) <- runBenchmark b lowerBound 
+      putStrLn (showMeasures (off+1) measures)
+   runBench off (BenchGroup name benchs) = do
+      indentName off name
+      forM_ benchs (runBench (off + 1))
+
+indentName :: Int -> String -> IO ()
+indentName n s = putStrLn (replicate (3*n) ' ' ++ "+ "++ s)
+
+showMeasures :: Int -> [Measured] -> String
+showMeasures off ms = mconcat $ fmap (pad ++)
+   [ "Time:      ", show avgTime
+   ]
+   where
+      pad = replicate (3*off) ' '
+      n = length ms
+      avgTime = sum (fmap measTime ms) / fromIntegral n
+
 
 benchmarks :: [Benchmark]
-benchmarks = 
-   let
-      wSmall1, wSmall2 :: Word
-      !wSmall1 = 0x123456
-      !wSmall2 = 0x789ABC
-
-      bnSmall1,bnSmall2 :: H.BigNat
-      !bnSmall1 = fromIntegral wSmall1
-      !bnSmall2 = fromIntegral wSmall2
-
-      hnSmall1,hnSmall2 :: H.Natural
-      !hnSmall1 = fromIntegral wSmall1
-      !hnSmall2 = fromIntegral wSmall2
-
-      nSmall1,nSmall2 :: Natural
-      !nSmall1 = fromIntegral wSmall1
-      !nSmall2 = fromIntegral wSmall2
-
-      sSmall1,sSmall2 :: S.Integer
-      !sSmall1 = case wSmall1 of W# w -> S.wordToInteger w
-      !sSmall2 = case wSmall2 of W# w -> S.wordToInteger w
-
-      iBig1,iBig2 :: Integer
-      !iBig1 = fromIntegral wSmall1 `shiftL` 5000 + fromIntegral wSmall1
-      !iBig2 = fromIntegral wSmall2 `shiftL` 5000 + fromIntegral wSmall2
-
-      bnBig1,bnBig2 :: H.BigNat
-      !bnBig1 = fromIntegral iBig1
-      !bnBig2 = fromIntegral iBig2
-
-      hnBig1,hnBig2 :: H.Natural
-      !hnBig1 = fromIntegral iBig1
-      !hnBig2 = fromIntegral iBig2
-
-      nBig1,nBig2 :: Natural
-      !nBig1 = fromIntegral iBig1
-      !nBig2 = fromIntegral iBig2
-
-      sBig1,sBig2 :: S.Integer
-      !sBig1 = (sSmall1 `S.shiftLInteger` 5000#) `S.plusInteger` sSmall1
-      !sBig2 = (sSmall2 `S.shiftLInteger` 5000#) `S.plusInteger` sSmall2
-
-      mSpl :: a -> Maybe a
-      mSpl = const Nothing
-      --mSpl = Just
-
-      mBgn :: a -> Maybe a
-      mBgn = const Nothing
-      --mBgn = Just
-
-
-   in
-   [ bgroup "Small addition" $ catMaybes
-      [ mBgn $ bench "Haskus BigNat"    $ whnf (uncurry (+))           $! (bnSmall1,bnSmall2)
-      , Just $ bench "Haskus Natural"   $ whnf (uncurry (+))           $! (hnSmall1,hnSmall2)
-      , Just $ bench "Natural"          $ whnf (uncurry (+))           $! (nSmall1,nSmall2)
-      , mSpl $ bench "Simple integer"   $ whnf (uncurry S.plusInteger) $! (sSmall1,sSmall2)
+benchmarks =
+   [ bgroup "Small addition" $
+      [ bench "Word"    $ whnf (uncurry (+)) $! (vWord1, vWord2)
+      , bench "Int"     $ whnf (uncurry (+)) $! (vInt1, vInt2)
+      , bench "Integer" $ whnf (uncurry (+)) $! (vSmallInteger1, vSmallInteger2)
+      , bench "Natural" $ whnf (uncurry (+)) $! (vSmallNatural1, vSmallNatural2)
       ]
-   , bgroup "Small multiplication" $ catMaybes
-      [ mBgn $ bench "Haskus BigNat"    $ whnf (uncurry (*))            $! (bnSmall1,bnSmall2)
-      , Just $ bench "Haskus Natural"   $ whnf (uncurry (*))            $! (hnSmall1,hnSmall2)
-      , Just $ bench "Natural"          $ whnf (uncurry (*))            $! (nSmall1,nSmall2)
-      , mSpl $ bench "Simple integer"   $ whnf (uncurry S.timesInteger) $! (sSmall1,sSmall2)
+   , bgroup "Small multiplication" $
+      [ bench "Word"    $ whnf (uncurry (*)) $! (vWord1, vWord2)
+      , bench "Int"     $ whnf (uncurry (*)) $! (vInt1, vInt2)
+      , bench "Integer" $ whnf (uncurry (*)) $! (vSmallInteger1, vSmallInteger2)
+      , bench "Natural" $ whnf (uncurry (*)) $! (vSmallNatural1, vSmallNatural2)
       ]
-   , bgroup "Small quotRem" $ catMaybes
-      [ mBgn $ bench "Haskus BigNat"    $ whnf (uncurry quotRem)           $! (bnSmall1,bnSmall2)
-      , Just $ bench "Haskus Natural"   $ whnf (uncurry quotRem)           $! (hnSmall1,hnSmall2)
-      , Just $ bench "Natural"          $ whnf (uncurry quotRem)           $! (nSmall1,nSmall2)
-      , mSpl $ bench "Simple integer"   $ whnf (uncurry S.divModInteger')  $! (sSmall1,sSmall2)
+   , bgroup "Medium addition" $
+      [ bench "Integer" $ whnf (uncurry (+)) $! (vMediumInteger1, vMediumInteger2)
+      , bench "Natural" $ whnf (uncurry (+)) $! (vMediumNatural1, vMediumNatural2)
       ]
-   , bgroup "Big addition" $ catMaybes
-      [ mBgn $ bench "Haskus BigNat"    $ whnf (uncurry (+))            $! (bnBig1,bnBig2)
-      , Just $ bench "Haskus Natural"   $ whnf (uncurry (+))            $! (hnBig1,hnBig2)
-      , Just $ bench "Natural"          $ whnf (uncurry (+))            $! (nBig1,nBig2)
-      , mSpl $ bench "Simple integer"   $ whnf (uncurry S.plusInteger)  $! (sBig1,sBig2)
+   , bgroup "Medium multiplication" $
+      [ bench "Integer" $ whnf (uncurry (*)) $! (vMediumInteger1, vMediumInteger2)
+      , bench "Natural" $ whnf (uncurry (*)) $! (vMediumNatural1, vMediumNatural2)
       ]
-   , bgroup "Big multiplication" $ catMaybes
-      [ mBgn $ bench "Haskus BigNat"    $ whnf (uncurry (*))            $! (bnBig1,bnBig2)
-      , Just $ bench "Haskus Natural"   $ whnf (uncurry (*))            $! (hnBig1,hnBig2)
-      , Just $ bench "Natural"          $ whnf (uncurry (*))            $! (nBig1,nBig2)
-      , mSpl $ bench "Simple integer"   $ whnf (uncurry S.timesInteger) $! (sBig1,sBig2)
+   , bgroup "Medium subtraction" $
+      [ bench "Integer" $ whnf (uncurry (-)) $! (vMediumInteger1, vMediumInteger2)
+      , bench "Natural" $ whnf (uncurry (-)) $! (vMediumNatural1, vMediumNatural2)
       ]
-   , bgroup "Big quotRem" $ catMaybes
-      [ mBgn $ bench "Haskus BigNat"    $ whnf (uncurry quotRem)           $! (bnBig1,bnBig2)
-      , Just $ bench "Haskus Natural"   $ whnf (uncurry quotRem)           $! (hnBig1,hnBig2)
-      , Just $ bench "Natural"          $ whnf (uncurry quotRem)           $! (nBig1,nBig2)
-      , mSpl $ bench "Simple integer"   $ whnf (uncurry S.divModInteger')  $! (sBig1,sBig2)
+   , bgroup "Medium division" $
+      [ bench "Integer" $ whnf (uncurry div) $! (vMediumInteger1, vMediumInteger2)
+      , bench "Natural" $ whnf (uncurry div) $! (vMediumNatural1, vMediumNatural2)
+      ]
+   , bgroup "Big addition" $
+      [ bench "Integer" $ whnf (uncurry (+)) $! (vBigInteger1, vBigInteger2)
+      , bench "Natural" $ whnf (uncurry (+)) $! (vBigNatural1, vBigNatural2)
+      ]
+   , bgroup "Big multiplication" $
+      [ bench "Integer" $ whnf (uncurry (*)) $! (vBigInteger1, vBigInteger2)
+      , bench "Natural" $ whnf (uncurry (*)) $! (vBigNatural1, vBigNatural2)
+      ]
+   , bgroup "Big subtraction" $
+      [ bench "Integer" $ whnf (uncurry (-)) $! (vBigInteger1, vBigInteger2)
+      , bench "Natural" $ whnf (uncurry (-)) $! (vBigNatural1, vBigNatural2)
+      ]
+   , bgroup "Big division" $
+      [ bench "Integer" $ whnf (uncurry div) $! (vBigInteger1, vBigInteger2)
+      , bench "Natural" $ whnf (uncurry div) $! (vBigNatural1, vBigNatural2)
       ]
    ]
