@@ -83,6 +83,12 @@ benchmarks =
          , bench "Integer" $ whnf (uncurry gcd) $! (vSmallInteger1, vSmallInteger2)
          , bench "Natural" $ whnf (uncurry gcd) $! (vSmallNatural1, vSmallNatural2)
          ]
+      , bgroup "lcm" $
+         [ bench "Word"    $ whnf (uncurry lcm) $! (vWord1, vWord2)
+         , bench "Int"     $ whnf (uncurry lcm) $! (vInt1, vInt2)
+         , bench "Integer" $ whnf (uncurry lcm) $! (vSmallInteger1, vSmallInteger2)
+         , bench "Natural" $ whnf (uncurry lcm) $! (vSmallNatural1, vSmallNatural2)
+         ]
       ]
    , bgroup "Medium" $
       [ bgroup "addition" $
@@ -108,6 +114,10 @@ benchmarks =
       , bgroup "gcd" $
          [ bench "Integer" $ whnf (uncurry gcd) $! (vMediumInteger1, vMediumInteger2)
          , bench "Natural" $ whnf (uncurry gcd) $! (vMediumNatural1, vMediumNatural2)
+         ]
+      , bgroup "lcm" $
+         [ bench "Integer" $ whnf (uncurry lcm) $! (vMediumInteger1, vMediumInteger2)
+         , bench "Natural" $ whnf (uncurry lcm) $! (vMediumNatural1, vMediumNatural2)
          ]
       ]
    , bgroup "Big" $
@@ -135,6 +145,10 @@ benchmarks =
          [ bench "Integer" $ whnf (uncurry gcd) $! (vBigInteger1, vBigInteger2)
          , bench "Natural" $ whnf (uncurry gcd) $! (vBigNatural1, vBigNatural2)
          ]
+      , bgroup "lcm" $
+         [ bench "Integer" $ whnf (uncurry lcm) $! (vBigInteger1, vBigInteger2)
+         , bench "Natural" $ whnf (uncurry lcm) $! (vBigNatural1, vBigNatural2)
+         ]
       ]
    , bgroup "Big-small" $
       [ bgroup "addition" $
@@ -161,6 +175,10 @@ benchmarks =
          [ bench "Integer" $ whnf (uncurry gcd) $! (vBigInteger1, vSmallInteger2)
          , bench "Natural" $ whnf (uncurry gcd) $! (vBigNatural1, vSmallNatural2)
          ]
+      , bgroup "lcm" $
+         [ bench "Integer" $ whnf (uncurry lcm) $! (vBigInteger1, vSmallInteger2)
+         , bench "Natural" $ whnf (uncurry lcm) $! (vBigNatural1, vSmallNatural2)
+         ]
       ]
    , bgroup "Big-medium" $
       [ bgroup "addition" $
@@ -184,8 +202,12 @@ benchmarks =
          , bench "Natural" $ whnf (uncurry quotRem) $! (vBigNatural1, vMediumNatural2)
          ]
       , bgroup "gcd" $
-         [ bench "Integer" $ whnf (uncurry div) $! (vBigInteger1, vMediumInteger2)
-         , bench "Natural" $ whnf (uncurry div) $! (vBigNatural1, vMediumNatural2)
+         [ bench "Integer" $ whnf (uncurry gcd) $! (vBigInteger1, vMediumInteger2)
+         , bench "Natural" $ whnf (uncurry gcd) $! (vBigNatural1, vMediumNatural2)
+         ]
+      , bgroup "lcm" $
+         [ bench "Integer" $ whnf (uncurry lcm) $! (vBigInteger1, vMediumInteger2)
+         , bench "Natural" $ whnf (uncurry lcm) $! (vBigNatural1, vMediumNatural2)
          ]
       ]
    ]
