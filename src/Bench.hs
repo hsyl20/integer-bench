@@ -36,58 +36,156 @@ indentName n s = putStrLn (replicate (3*n) ' ' ++ "+ "++ s)
 
 showMeasures :: Int -> [Measured] -> String
 showMeasures off ms = mconcat $ fmap (pad ++)
-   [ "Time:      ", show avgTime
+   [ "Time:      ", show (avgTime / avgIters)
    ]
    where
       pad = replicate (3*off) ' '
-      n = length ms
-      avgTime = sum (fmap measTime ms) / fromIntegral n
+      avgTime  = sum (fmap measTime ms)
+      avgIters = sum (fmap (fromIntegral . measIters) ms)
 
 
 benchmarks :: [Benchmark]
 benchmarks =
-   [ bgroup "Small addition" $
-      [ bench "Word"    $ whnf (uncurry (+)) $! (vWord1, vWord2)
-      , bench "Int"     $ whnf (uncurry (+)) $! (vInt1, vInt2)
-      , bench "Integer" $ whnf (uncurry (+)) $! (vSmallInteger1, vSmallInteger2)
-      , bench "Natural" $ whnf (uncurry (+)) $! (vSmallNatural1, vSmallNatural2)
+   [ bgroup "Small" $
+      [ bgroup "addition" $
+         [ bench "Word"    $ whnf (uncurry (+)) $! (vWord1, vWord2)
+         , bench "Int"     $ whnf (uncurry (+)) $! (vInt1, vInt2)
+         , bench "Integer" $ whnf (uncurry (+)) $! (vSmallInteger1, vSmallInteger2)
+         , bench "Natural" $ whnf (uncurry (+)) $! (vSmallNatural1, vSmallNatural2)
+         ]
+      , bgroup "multiplication" $
+         [ bench "Word"    $ whnf (uncurry (*)) $! (vWord1, vWord2)
+         , bench "Int"     $ whnf (uncurry (*)) $! (vInt1, vInt2)
+         , bench "Integer" $ whnf (uncurry (*)) $! (vSmallInteger1, vSmallInteger2)
+         , bench "Natural" $ whnf (uncurry (*)) $! (vSmallNatural1, vSmallNatural2)
+         ]
+      , bgroup "subtraction" $
+         [ bench "Word"    $ whnf (uncurry (-)) $! (vWord1, vWord2)
+         , bench "Int"     $ whnf (uncurry (-)) $! (vInt1, vInt2)
+         , bench "Integer" $ whnf (uncurry (-)) $! (vSmallInteger1, vSmallInteger2)
+         , bench "Natural" $ whnf (uncurry (-)) $! (vSmallNatural1, vSmallNatural2)
+         ]
+      , bgroup "division" $
+         [ bench "Word"    $ whnf (uncurry div) $! (vWord1, vWord2)
+         , bench "Int"     $ whnf (uncurry div) $! (vInt1, vInt2)
+         , bench "Integer" $ whnf (uncurry div) $! (vSmallInteger1, vSmallInteger2)
+         , bench "Natural" $ whnf (uncurry div) $! (vSmallNatural1, vSmallNatural2)
+         ]
+      , bgroup "quotRem" $
+         [ bench "Word"    $ whnf (uncurry quotRem) $! (vWord1, vWord2)
+         , bench "Int"     $ whnf (uncurry quotRem) $! (vInt1, vInt2)
+         , bench "Integer" $ whnf (uncurry quotRem) $! (vSmallInteger1, vSmallInteger2)
+         , bench "Natural" $ whnf (uncurry quotRem) $! (vSmallNatural1, vSmallNatural2)
+         ]
+      , bgroup "gcd" $
+         [ bench "Word"    $ whnf (uncurry gcd) $! (vWord1, vWord2)
+         , bench "Int"     $ whnf (uncurry gcd) $! (vInt1, vInt2)
+         , bench "Integer" $ whnf (uncurry gcd) $! (vSmallInteger1, vSmallInteger2)
+         , bench "Natural" $ whnf (uncurry gcd) $! (vSmallNatural1, vSmallNatural2)
+         ]
       ]
-   , bgroup "Small multiplication" $
-      [ bench "Word"    $ whnf (uncurry (*)) $! (vWord1, vWord2)
-      , bench "Int"     $ whnf (uncurry (*)) $! (vInt1, vInt2)
-      , bench "Integer" $ whnf (uncurry (*)) $! (vSmallInteger1, vSmallInteger2)
-      , bench "Natural" $ whnf (uncurry (*)) $! (vSmallNatural1, vSmallNatural2)
+   , bgroup "Medium" $
+      [ bgroup "addition" $
+         [ bench "Integer" $ whnf (uncurry (+)) $! (vMediumInteger1, vMediumInteger2)
+         , bench "Natural" $ whnf (uncurry (+)) $! (vMediumNatural1, vMediumNatural2)
+         ]
+      , bgroup "multiplication" $
+         [ bench "Integer" $ whnf (uncurry (*)) $! (vMediumInteger1, vMediumInteger2)
+         , bench "Natural" $ whnf (uncurry (*)) $! (vMediumNatural1, vMediumNatural2)
+         ]
+      , bgroup "subtraction" $
+         [ bench "Integer" $ whnf (uncurry (-)) $! (vMediumInteger1, vMediumInteger2)
+         , bench "Natural" $ whnf (uncurry (-)) $! (vMediumNatural1, vMediumNatural2)
+         ]
+      , bgroup "division" $
+         [ bench "Integer" $ whnf (uncurry div) $! (vMediumInteger1, vMediumInteger2)
+         , bench "Natural" $ whnf (uncurry div) $! (vMediumNatural1, vMediumNatural2)
+         ]
+      , bgroup "quotRem" $
+         [ bench "Integer" $ whnf (uncurry quotRem) $! (vMediumInteger1, vMediumInteger2)
+         , bench "Natural" $ whnf (uncurry quotRem) $! (vMediumNatural1, vMediumNatural2)
+         ]
+      , bgroup "gcd" $
+         [ bench "Integer" $ whnf (uncurry gcd) $! (vMediumInteger1, vMediumInteger2)
+         , bench "Natural" $ whnf (uncurry gcd) $! (vMediumNatural1, vMediumNatural2)
+         ]
       ]
-   , bgroup "Medium addition" $
-      [ bench "Integer" $ whnf (uncurry (+)) $! (vMediumInteger1, vMediumInteger2)
-      , bench "Natural" $ whnf (uncurry (+)) $! (vMediumNatural1, vMediumNatural2)
+   , bgroup "Big" $
+      [ bgroup "addition" $
+         [ bench "Integer" $ whnf (uncurry (+)) $! (vBigInteger1, vBigInteger2)
+         , bench "Natural" $ whnf (uncurry (+)) $! (vBigNatural1, vBigNatural2)
+         ]
+      , bgroup "multiplication" $
+         [ bench "Integer" $ whnf (uncurry (*)) $! (vBigInteger1, vBigInteger2)
+         , bench "Natural" $ whnf (uncurry (*)) $! (vBigNatural1, vBigNatural2)
+         ]
+      , bgroup "subtraction" $
+         [ bench "Integer" $ whnf (uncurry (-)) $! (vBigInteger1, vBigInteger2)
+         , bench "Natural" $ whnf (uncurry (-)) $! (vBigNatural1, vBigNatural2)
+         ]
+      , bgroup "division" $
+         [ bench "Integer" $ whnf (uncurry div) $! (vBigInteger1, vBigInteger2)
+         , bench "Natural" $ whnf (uncurry div) $! (vBigNatural1, vBigNatural2)
+         ]
+      , bgroup "quotRem" $
+         [ bench "Integer" $ whnf (uncurry quotRem) $! (vBigInteger1, vBigInteger2)
+         , bench "Natural" $ whnf (uncurry quotRem) $! (vBigNatural1, vBigNatural2)
+         ]
+      , bgroup "gcd" $
+         [ bench "Integer" $ whnf (uncurry gcd) $! (vBigInteger1, vBigInteger2)
+         , bench "Natural" $ whnf (uncurry gcd) $! (vBigNatural1, vBigNatural2)
+         ]
       ]
-   , bgroup "Medium multiplication" $
-      [ bench "Integer" $ whnf (uncurry (*)) $! (vMediumInteger1, vMediumInteger2)
-      , bench "Natural" $ whnf (uncurry (*)) $! (vMediumNatural1, vMediumNatural2)
+   , bgroup "Big-small" $
+      [ bgroup "addition" $
+         [ bench "Integer" $ whnf (uncurry (+)) $! (vBigInteger1, vSmallInteger2)
+         , bench "Natural" $ whnf (uncurry (+)) $! (vBigNatural1, vSmallNatural2)
+         ]
+      , bgroup "multiplication" $
+         [ bench "Integer" $ whnf (uncurry (*)) $! (vBigInteger1, vSmallInteger2)
+         , bench "Natural" $ whnf (uncurry (*)) $! (vBigNatural1, vSmallNatural2)
+         ]
+      , bgroup "subtraction" $
+         [ bench "Integer" $ whnf (uncurry (-)) $! (vBigInteger1, vSmallInteger2)
+         , bench "Natural" $ whnf (uncurry (-)) $! (vBigNatural1, vSmallNatural2)
+         ]
+      , bgroup "division" $
+         [ bench "Integer" $ whnf (uncurry div) $! (vBigInteger1, vSmallInteger2)
+         , bench "Natural" $ whnf (uncurry div) $! (vBigNatural1, vSmallNatural2)
+         ]
+      , bgroup "quotRem" $
+         [ bench "Integer" $ whnf (uncurry quotRem) $! (vBigInteger1, vSmallInteger2)
+         , bench "Natural" $ whnf (uncurry quotRem) $! (vBigNatural1, vSmallNatural2)
+         ]
+      , bgroup "gcd" $
+         [ bench "Integer" $ whnf (uncurry gcd) $! (vBigInteger1, vSmallInteger2)
+         , bench "Natural" $ whnf (uncurry gcd) $! (vBigNatural1, vSmallNatural2)
+         ]
       ]
-   , bgroup "Medium subtraction" $
-      [ bench "Integer" $ whnf (uncurry (-)) $! (vMediumInteger1, vMediumInteger2)
-      , bench "Natural" $ whnf (uncurry (-)) $! (vMediumNatural1, vMediumNatural2)
-      ]
-   , bgroup "Medium division" $
-      [ bench "Integer" $ whnf (uncurry div) $! (vMediumInteger1, vMediumInteger2)
-      , bench "Natural" $ whnf (uncurry div) $! (vMediumNatural1, vMediumNatural2)
-      ]
-   , bgroup "Big addition" $
-      [ bench "Integer" $ whnf (uncurry (+)) $! (vBigInteger1, vBigInteger2)
-      , bench "Natural" $ whnf (uncurry (+)) $! (vBigNatural1, vBigNatural2)
-      ]
-   , bgroup "Big multiplication" $
-      [ bench "Integer" $ whnf (uncurry (*)) $! (vBigInteger1, vBigInteger2)
-      , bench "Natural" $ whnf (uncurry (*)) $! (vBigNatural1, vBigNatural2)
-      ]
-   , bgroup "Big subtraction" $
-      [ bench "Integer" $ whnf (uncurry (-)) $! (vBigInteger1, vBigInteger2)
-      , bench "Natural" $ whnf (uncurry (-)) $! (vBigNatural1, vBigNatural2)
-      ]
-   , bgroup "Big division" $
-      [ bench "Integer" $ whnf (uncurry div) $! (vBigInteger1, vBigInteger2)
-      , bench "Natural" $ whnf (uncurry div) $! (vBigNatural1, vBigNatural2)
+   , bgroup "Big-medium" $
+      [ bgroup "addition" $
+         [ bench "Integer" $ whnf (uncurry (+)) $! (vBigInteger1, vMediumInteger2)
+         , bench "Natural" $ whnf (uncurry (+)) $! (vBigNatural1, vMediumNatural2)
+         ]
+      , bgroup "multiplication" $
+         [ bench "Integer" $ whnf (uncurry (*)) $! (vBigInteger1, vMediumInteger2)
+         , bench "Natural" $ whnf (uncurry (*)) $! (vBigNatural1, vMediumNatural2)
+         ]
+      , bgroup "subtraction" $
+         [ bench "Integer" $ whnf (uncurry (-)) $! (vBigInteger1, vMediumInteger2)
+         , bench "Natural" $ whnf (uncurry (-)) $! (vBigNatural1, vMediumNatural2)
+         ]
+      , bgroup "division" $
+         [ bench "Integer" $ whnf (uncurry div) $! (vBigInteger1, vMediumInteger2)
+         , bench "Natural" $ whnf (uncurry div) $! (vBigNatural1, vMediumNatural2)
+         ]
+      , bgroup "quotRem" $
+         [ bench "Integer" $ whnf (uncurry quotRem) $! (vBigInteger1, vMediumInteger2)
+         , bench "Natural" $ whnf (uncurry quotRem) $! (vBigNatural1, vMediumNatural2)
+         ]
+      , bgroup "gcd" $
+         [ bench "Integer" $ whnf (uncurry div) $! (vBigInteger1, vMediumInteger2)
+         , bench "Natural" $ whnf (uncurry div) $! (vBigNatural1, vMediumNatural2)
+         ]
       ]
    ]

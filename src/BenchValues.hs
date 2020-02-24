@@ -5,26 +5,26 @@ import Numeric.Natural
 vInt1, vInt2 :: Int
 {-# NOINLINE vInt1 #-}
 {-# NOINLINE vInt2 #-}
-vInt1 = 0x123456
-vInt2 = 0x789ABC
+vInt1 = 0x789ABC
+vInt2 = 0x123456
 
 vWord1, vWord2 :: Word
 {-# NOINLINE vWord1 #-}
 {-# NOINLINE vWord2 #-}
-vWord1 = 0x123456
-vWord2 = 0x789ABC
+vWord1 = 0x789ABC
+vWord2 = 0x123456
 
 vSmallInteger1, vSmallInteger2 :: Integer
 {-# NOINLINE vSmallInteger1 #-}
 {-# NOINLINE vSmallInteger2 #-}
-vSmallInteger1 = 0x123456
-vSmallInteger2 = 0x789ABC
+vSmallInteger1 = 0x789ABC
+vSmallInteger2 = 0x123456
 
 vSmallNatural1, vSmallNatural2 :: Natural
 {-# NOINLINE vSmallNatural1 #-}
 {-# NOINLINE vSmallNatural2 #-}
-vSmallNatural1 = 0x123456
-vSmallNatural2 = 0x789ABC
+vSmallNatural1 = 0x789ABC
+vSmallNatural2 = 0x123456
 
 vMediumInteger1, vMediumInteger2 :: Integer
 {-# NOINLINE vMediumInteger1 #-}
